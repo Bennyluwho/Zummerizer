@@ -17,20 +17,26 @@ function App() {
         setSummary("");
 
         try {
-            const response = await fetch("https://YOUR-BACKEND-URL/summarize", {
+            const response = await fetch("http://localhost:8000/summarize", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ url }),
             });
 
-            if (!response.ok) throw new Error("Network response was not ok.");
+            if (!response.ok) throw new Error("Failed to connect to backend.");
 
             const data = await response.json();
-            setSummary(data.summary);
-            toast.success("Summary generated successfully!");
+
+            if (data.summary) {
+                setSummary(data.summary);
+                toast.success("Summary generated successfully!");
+            } else if (data.error) {
+                setSummary("❌ Error: " + data.error);
+                toast.error("Backend Error: " + data.error);
+            }
+
         } catch (error) {
             console.error(error);
-            setSummary("❌ Error generating summary.");
             toast.error("Failed to generate summary.");
         } finally {
             setLoading(false);
@@ -48,7 +54,7 @@ function App() {
             />
             <button onClick={handleSummarize}>Summarize</button>
 
-            {loading && <div className="spinner"></div>}
+            {loading && <div className="spinner">Loading...</div>}
 
             {summary && (
                 <div className="summary">
