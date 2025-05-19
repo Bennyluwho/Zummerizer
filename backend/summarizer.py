@@ -36,7 +36,7 @@ def summarize():
         response = client.chat.completions.create(
             model="gpt-4o",  # You can change to "gpt-3.5-turbo" if needed
             messages=[
-                {"role": "user", "content": f"Summarize the following article in concise bullet points:\n\n{content}"}
+                {"role": "user", "content": f"Summarize the following article:\n\n{content}"}
             ],
             max_tokens=300
         )
