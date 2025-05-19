@@ -45,7 +45,7 @@ function App() {
 
     return (
         <div className="app">
-            <h1>📰 Article Digest Bot</h1>
+            <h1>📰 Zummerizer</h1>
             <input
                 type="text"
                 value={url}

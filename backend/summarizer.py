@@ -26,7 +26,7 @@ def summarize_text(text):
         messages=[
             {
                 "role": "user",
-                "content": f"Summarize the following article in concise bullet points:\n\n{text}"
+                "content": f"Summarize the following article:\n\n{text}"
             }
         ],
         max_tokens=300,
