@@ -1,7 +1,6 @@
 flask
 gunicorn
-newspaper3k
+flask-cors
 openai>=1.0.0
 python-dotenv
-lxml_html_clean
-flask_cors
+newspaper3k
