@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 import openai
@@ -19,6 +20,7 @@ if not api_key:
 openai.api_key = api_key
 
 app = Flask(__name__)
+CORS(app)  # This allows all origins by default
 
 @app.route('/summarize', methods=['POST'])
 def summarize():
