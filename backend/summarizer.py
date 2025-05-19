@@ -5,10 +5,16 @@ import openai
 from newspaper import Article
 
 # Load environment variables
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
+# load_dotenv()
+# api_key = os.getenv("OPENAI_API_KEY")
+# if not api_key:
+#     raise ValueError("❌ OpenAI API key is missing. Add it to your .env file.")
+
+with open("/etc/secrets/OPENAI_API_KEY", "r") as file:
+    api_key = file.read().strip()
+
 if not api_key:
-    raise ValueError("❌ OpenAI API key is missing. Add it to your .env file.")
+    raise ValueError("❌ OpenAI API key is missing from the secret file.")
 
 openai.api_key = api_key
 
