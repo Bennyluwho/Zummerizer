@@ -45,7 +45,8 @@ function App() {
 
     return (
         <div className="app">
-            <h1>📰 Article Digest Bot</h1>
+        <h1>📰 Zummerizer</h1>
+        <div className="input-container">
             <input
                 type="text"
                 value={url}
@@ -53,16 +54,23 @@ function App() {
                 placeholder="Enter Article URL"
             />
             <button onClick={handleSummarize}>Summarize</button>
+        </div>
 
-            {loading && <div className="spinner">Loading...</div>}
+        {loading && (
+            <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Loading...</p>
+            </div>
+        )}
 
-            {summary && (
+        {summary && (
+            <div className="summary-container">
                 <div className="summary">
                     <h2>📑 Summary:</h2>
                     <p dangerouslySetInnerHTML={{ __html: summary.replace(/\n/g, "<br>") }} />
                 </div>
-            )}
-
+            </div>
+        )}
             <ToastContainer position="top-center" />
         </div>
     );

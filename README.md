@@ -39,17 +39,12 @@ cd zummerizer
 
 ## 🎨 Frontend Setup (React)
 
-1. Navigate to the frontend directory:
-```bash
-cd frontend
-```
-
-2. Install dependencies:
+1. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Start the React app:
+2. Start the React app:
 ```bash
 # For Vite
 npm run dev
@@ -58,7 +53,7 @@ npm run dev
 npm start
 ```
 
-4. Open in your browser:
+3. Open in your browser:
 ```
 http://localhost:3000  (or port shown in terminal)
 ```
