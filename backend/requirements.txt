@@ -4,3 +4,4 @@ newspaper3k
 openai>=1.0.0
 python-dotenv
 lxml_html_clean
+flask_cors
