@@ -17,7 +17,7 @@ function App() {
         setSummary("");
 
         try {
-            const response = await fetch("https://zummerizer.onrender.com", {
+            const response = await fetch("https://zummerizer.onrender.com/summarize", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ url }),
