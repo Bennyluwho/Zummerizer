@@ -26,6 +26,7 @@ function App() {
             if (!response.ok) throw new Error("Failed to connect to backend.");
 
             const data = await response.json();
+            console.log("🧠 API Response:", data);  
 
             if (data.summary) {
                 setSummary(data.summary);
