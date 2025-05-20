@@ -14,7 +14,7 @@ if not api_key:
 client = openai.OpenAI(api_key=api_key)
 
 app = Flask(__name__)
-CORS(app, origins=["https://bennyluwho.com/Zummerizer"])  # Allow frontend CORS requests
+CORS(app, origins=["https://bennyluwho.com"])  # Allow frontend CORS requests
 
 @app.route('/summarize', methods=['POST'])
 def summarize():
