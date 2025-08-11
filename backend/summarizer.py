@@ -1,52 +1,62 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import openai
+from openai import OpenAI
 from newspaper import Article
+from dotenv import load_dotenv
+from pathlib import Path
 
-# Load API Key from Render Secret File
-with open("/etc/secrets/OPENAI_API_KEY", "r") as file:
-    api_key = file.read().strip()
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    secret_path = Path("/etc/secrets/OPENAI_API_KEY")
+    if secret_path.exists():
+        api_key = secret_path.read_text().strip()
 
 if not api_key:
-    raise ValueError("❌ OpenAI API key is missing from the secret file.")
-
-# Initialize OpenAI Client (new SDK syntax)
-client = openai.OpenAI(api_key=api_key)
+    raise RuntimeError("OPENAI_API_KEY not found (env or /etc/secrets/OPENAI_API_KEY).")
 
 app = Flask(__name__)
-CORS(app, origins=["https://bennyluwho.com"])  # Allow frontend CORS requests
+# Dev: allow everything. (Tighten later.)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-@app.route('/summarize', methods=['POST'])
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+@app.post("/summarize")
 def summarize():
-    data = request.get_json()
-    url = data.get('url')
-
+    data = request.get_json(silent=True) or {}
+    url = (data.get("url") or "").strip()
     if not url:
         return jsonify({"error": "No URL provided."}), 400
 
+    # 1) Extract article text
     try:
-        article = Article(url)
-        article.download()
-        article.parse()
-        content = article.text
-
-        if not content.strip():
+        art = Article(url)
+        art.download()
+        art.parse()
+        text = (art.text or "").strip()
+        if not text:
             return jsonify({"error": "Failed to extract article content."}), 400
-
-        response = client.chat.completions.create(
-            model="gpt-4o",  # You can change to "gpt-3.5-turbo" if needed
-            messages=[
-                {"role": "user", "content": f"Summarize the following article:\n\n{content}"}
-            ],
-            max_tokens=300
-        )
-
-        summary = response.choices[0].message.content
-        return jsonify({"summary": summary})
-
     except Exception as e:
-        print(f"❌ Error occurred: {e}", flush=True)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Extractor error: {e}"}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    # 2) Summarize with OpenAI
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are a concise article summarizer."},
+                {"role": "user", "content": "Summarize in a short response paragraph\n\n" + text}
+            ],
+            temperature=0.2,
+            max_tokens=350
+        )
+        summary = resp.choices[0].message.content
+        return jsonify({"summary": summary})
+    except Exception as e:
+        return jsonify({"error": f"OpenAI error: {e}"}), 500
+
+if __name__ == "__main__":
+    # Runs with: python summarizer.py
+    app.run(host="127.0.0.1", port=5000, debug=True)
