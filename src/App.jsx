@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 
 function App() {
     const [url, setUrl] = useState("");
@@ -17,10 +19,10 @@ function App() {
         setSummary("");
 
         try {
-            const response = await fetch("http://127.0.0.1:5000/summarize", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url }),
+            const response = await fetch(`${API_BASE}/summarize`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url }),
             });
 
             if (!response.ok) throw new Error("Failed to connect to backend.");
