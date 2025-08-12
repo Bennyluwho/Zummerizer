@@ -57,7 +57,7 @@ def summarize():
                 {"role": "system", "content": "You are a concise article summarizer."},
                 {
                     "role": "user",
-                    "content": "Summarize the article in 4–6 short bullet points. "
+                    "content": "Summarize the article in a short paragraph response. "
                                "Focus on key facts, outcomes, and numbers when present.\n\n" + text
                 },
             ],
@@ -74,4 +74,4 @@ def summarize():
 if __name__ == "__main__":
     # Local: defaults to 5000; Render: uses the provided $PORT
     port = int(os.environ.get("PORT", "5000"))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
