@@ -1,28 +1,26 @@
 import os
+from pathlib import Path
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from openai import OpenAI
 from newspaper import Article
-from pathlib import Path
 from dotenv import load_dotenv
-load_dotenv()  # local dev: reads backend/.env
 
+load_dotenv()  # enables local .env for dev
+
+# --- OpenAI key: env var first, then Render Secret File ---
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
-    # Render Secret File (Settings → Secret Files → name it OPENAI_API_KEY)
     secret_path = Path("/etc/secrets/OPENAI_API_KEY")
     if secret_path.exists():
         api_key = secret_path.read_text().strip()
-
 if not api_key:
     raise RuntimeError("OPENAI_API_KEY not found (env or /etc/secrets/OPENAI_API_KEY).")
 
+client = OpenAI(api_key=api_key)
+
 app = Flask(__name__)
-# Dev: allow everything. (Tighten later.)
-CORS(app, resources={r"/*": {"origins": [
-    "https://<your-gh-pages-domain>",
-    "http://localhost:5173", "http://localhost:3000"
-]}})
+CORS(app, resources={r"/*": {"origins": "*"}})  # tighten later
 
 
 @app.get("/health")
