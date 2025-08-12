@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-const API_BASE = import.meta.env.VITE_API_BASE;
-
 
 function App() {
     const [url, setUrl] = useState("");
@@ -19,10 +17,13 @@ function App() {
         setSummary("");
 
         try {
+            // Add a Vite env switch so you don’t edit this again
+            const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:5000";
+
             const response = await fetch(`${API_BASE}/summarize`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url }),
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
             });
 
             if (!response.ok) throw new Error("Failed to connect to backend.");
