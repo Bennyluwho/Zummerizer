@@ -1,3 +1,4 @@
+# backend/summarizer.py
 import os
 from pathlib import Path
 from flask import Flask, request, jsonify
@@ -6,22 +7,25 @@ from openai import OpenAI
 from newspaper import Article
 from dotenv import load_dotenv
 
-load_dotenv()  # enables local .env for dev
+# --- Load API key (local .env -> env var -> Render Secret File) ---
+load_dotenv()  # reads backend/.env during local dev
 
-# --- OpenAI key: env var first, then Render Secret File ---
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    secret_path = Path("/etc/secrets/OPENAI_API_KEY")
-    if secret_path.exists():
-        api_key = secret_path.read_text().strip()
-if not api_key:
-    raise RuntimeError("OPENAI_API_KEY not found (env or /etc/secrets/OPENAI_API_KEY).")
+def _load_openai_key() -> str:
+    key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        secret_path = Path("/etc/secrets/OPENAI_API_KEY")
+        if secret_path.exists():
+            key = secret_path.read_text().strip()
+    if not key:
+        raise RuntimeError("OPENAI_API_KEY not found (env or /etc/secrets/OPENAI_API_KEY).")
+    return key
 
-client = OpenAI(api_key=api_key)
+client = OpenAI(api_key=_load_openai_key())
 
+# --- Flask app ---
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # tighten later
-
+# Dev-friendly CORS; tighten to specific origins for prod if you want
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 @app.get("/health")
 def health():
@@ -36,10 +40,10 @@ def summarize():
 
     # 1) Extract article text
     try:
-        art = Article(url)
-        art.download()
-        art.parse()
-        text = (art.text or "").strip()
+        article = Article(url)
+        article.download()
+        article.parse()
+        text = (article.text or "").strip()
         if not text:
             return jsonify({"error": "Failed to extract article content."}), 400
     except Exception as e:
@@ -51,16 +55,23 @@ def summarize():
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are a concise article summarizer."},
-                {"role": "user", "content": "Summarize in a short response paragraph\n\n" + text}
+                {
+                    "role": "user",
+                    "content": "Summarize the article in 4–6 short bullet points. "
+                               "Focus on key facts, outcomes, and numbers when present.\n\n" + text
+                },
             ],
             temperature=0.2,
-            max_tokens=350
+            max_tokens=350,
         )
         summary = resp.choices[0].message.content
         return jsonify({"summary": summary})
     except Exception as e:
-        return jsonify({"error": f"OpenAI error: {e}"}), 500
+        # Avoid leaking internals to the client; check Render logs for details
+        print(f"[OpenAI ERROR] {e}", flush=True)
+        return jsonify({"error": "OpenAI request failed."}), 500
 
 if __name__ == "__main__":
-    # Runs with: python summarizer.py
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    # Local: defaults to 5000; Render: uses the provided $PORT
+    port = int(os.environ.get("PORT", "5000"))
+    app.run(host="0.0.0.0", port=port, debug=True)
